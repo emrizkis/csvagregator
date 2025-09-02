@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Infografis - CSV Aggregator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .venn-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-4 md:p-8">
+      <header class="text-center mb-16">
+        <h1 class="text-4xl md:text-5xl font-bold text-[#005082] mb-4">
+          CSV Aggregator
+        </h1>
+        <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+          Mengubah data yang terpisah menjadi wawasan terpadu dengan mudah dan
+          cepat, tanpa perlu coding.
+        </p>
+      </header>
+
+      <section id="problem" class="mb-20">
+        <h2 class="text-3xl font-bold text-center mb-8 text-[#0077C0]">
+          Tantangan Umum: Data Tersebar
+        </h2>
+        <p class="text-center max-w-2xl mx-auto mb-10">
+          Banyak bisnis memiliki data penting yang tersimpan di file-file
+          terpisah. Menggabungkannya secara manual memakan waktu, rentan
+          kesalahan, dan menghambat analisis.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold mb-3 flex items-center">
+              <span class="text-2xl mr-3">📁</span> File Data Penjualan
+            </h3>
+            <div class="bg-gray-50 p-3 rounded">
+              <code class="text-sm text-gray-700"
+                >id_transaksi, tanggal, nama_barang</code
+              >
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold mb-3 flex items-center">
+              <span class="text-2xl mr-3">📁</span> File Data Pembayaran
+            </h3>
+            <div class="bg-gray-50 p-3 rounded">
+              <code class="text-sm text-gray-700"
+                >id_transaksi, metode_pembayaran, status</code
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="solution" class="mb-20">
+        <h2 class="text-3xl font-bold text-center mb-12 text-[#0077C0]">
+          Solusi: Aplikasi Desktop Intuitif
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div class="bg-white p-8 rounded-lg shadow-md">
+            <div class="text-5xl mb-4 text-[#00A1E4]">⚙️</div>
+            <h3 class="text-2xl font-bold mb-2">Proses Otomatis</h3>
+            <p>
+              Konsolidasi dan gabungkan file CSV hanya dengan beberapa klik.
+            </p>
+          </div>
+          <div class="bg-white p-8 rounded-lg shadow-md">
+            <div class="text-5xl mb-4 text-[#00A1E4]">🎛️</div>
+            <h3 class="text-2xl font-bold mb-2">Kontrol Penuh</h3>
+            <p>
+              Pilih folder, tentukan kunci, dan pilih dari 4 tipe merge yang
+              berbeda.
+            </p>
+          </div>
+          <div class="bg-white p-8 rounded-lg shadow-md">
+            <div class="text-5xl mb-4 text-[#00A1E4]">📊</div>
+            <h3 class="text-2xl font-bold mb-2">Dasbor Terintegrasi</h3>
+            <p>
+              Lihat hasil penggabungan data secara langsung di dalam aplikasi.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow" class="mb-20">
+        <h2 class="text-3xl font-bold text-center mb-12 text-[#0077C0]">
+          Alur Kerja 3 Langkah Sederhana
+        </h2>
+        <div
+          class="flex flex-col md:flex-row justify-between items-center text-center gap-8 md:gap-4"
+        >
+          <div class="flex flex-col items-center">
+            <div
+              class="bg-[#00A1E4] text-white w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold shadow-lg"
+            >
+              1
+            </div>
+            <h3 class="text-xl font-semibold mt-4">Pilih Sumber</h3>
+            <p class="max-w-xs text-gray-600">
+              Tentukan folder Source A, B, dan folder untuk menyimpan hasil.
+            </p>
+          </div>
+          <div class="text-4xl text-[#0077C0] transform rotate-90 md:rotate-0">
+            ➡️
+          </div>
+          <div class="flex flex-col items-center">
+            <div
+              class="bg-[#00A1E4] text-white w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold shadow-lg"
+            >
+              2
+            </div>
+            <h3 class="text-xl font-semibold mt-4">Konfigurasi</h3>
+            <p class="max-w-xs text-gray-600">
+              Masukkan foreign key dan pilih tipe merge yang sesuai.
+            </p>
+          </div>
+          <div class="text-4xl text-[#0077C0] transform rotate-90 md:rotate-0">
+            ➡️
+          </div>
+          <div class="flex flex-col items-center">
+            <div
+              class="bg-[#00A1E4] text-white w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold shadow-lg"
+            >
+              3
+            </div>
+            <h3 class="text-xl font-semibold mt-4">Jalankan & Lihat</h3>
+            <p class="max-w-xs text-gray-600">
+              Eksekusi proses dan lihat hasilnya langsung di dasbor.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="merge-types" class="mb-12">
+        <h2 class="text-3xl font-bold text-center mb-12 text-[#0077C0]">
+          Memahami Kekuatan Tipe Merge (Join)
+        </h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div
+            class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center"
+          >
+            <h3 class="text-2xl font-bold mb-4 text-[#005082]">
+              1. Inner Join
+            </h3>
+            <p class="mb-6 text-center">
+              Hanya mengambil data yang kuncinya ada di kedua sumber. Ideal
+              untuk data yang saling berpasangan lengkap.
+            </p>
+            <div class="flex items-center justify-center w-48 h-32 mt-auto">
+              <div class="venn-circle bg-[#00A1E4] opacity-70 z-0">
+                <span>A</span>
+              </div>
+              <div class="venn-circle bg-[#0077C0] opacity-70 -ml-12 z-10">
+                <span>B</span>
+              </div>
+              <div class="absolute z-20 text-white font-bold text-sm">
+                Cocok
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center"
+          >
+            <h3 class="text-2xl font-bold mb-4 text-[#005082]">2. Left Join</h3>
+            <p class="mb-6 text-center">
+              Mengambil semua data dari Source A, dan mencocokkannya dengan
+              Source B. Berguna untuk melihat semua data utama.
+            </p>
+            <div class="flex items-center justify-center w-48 h-32 mt-auto">
+              <div class="venn-circle bg-[#00A1E4] z-10">
+                <span>Semua A</span>
+              </div>
+              <div class="venn-circle bg-[#0077C0] opacity-50 -ml-12 z-0">
+                <span>B</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center"
+          >
+            <h3 class="text-2xl font-bold mb-4 text-[#005082]">
+              3. Right Join
+            </h3>
+            <p class="mb-6 text-center">
+              Mengambil semua data dari Source B, dan mencocokkannya dengan
+              Source A. Kebalikan dari Left Join.
+            </p>
+            <div class="flex items-center justify-center w-48 h-32 mt-auto">
+              <div class="venn-circle bg-[#00A1E4] opacity-50 z-0">
+                <span>A</span>
+              </div>
+              <div class="venn-circle bg-[#0077C0] -ml-12 z-10">
+                <span>Semua B</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center"
+          >
+            <h3 class="text-2xl font-bold mb-4 text-[#005082]">
+              4. Outer Join
+            </h3>
+            <p class="mb-6 text-center">
+              Mengambil semua data dari kedua sumber, baik yang cocok maupun
+              tidak. Berguna untuk audit data.
+            </p>
+            <div class="flex items-center justify-center w-48 h-32 mt-auto">
+              <div class="venn-circle bg-[#00A1E4] z-0"></div>
+              <div
+                class="venn-circle bg-[#0077C0] opacity-90 -ml-12 z-10"
+              ></div>
+              <div class="absolute z-20 text-white font-bold text-sm">
+                Semua
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="download" class="text-center my-20">
+        <h2 class="text-3xl font-bold mb-6 text-[#0077C0]">
+          Tertarik Mencoba?
+        </h2>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+          Unduh versi terbaru dari aplikasi CSV Aggregator langsung dari
+          repositori GitHub kami.
+        </p>
+        <a
+          href="https://github.com/emrizkis/csvagregator"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block bg-[#005082] text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:bg-[#0077C0] transition-colors duration-300 text-xl"
+        >
+          Unduh dari GitHub 🚀
+        </a>
+      </section>
+    </div>
+
+    <footer class="text-center p-8 bg-[#005082] text-white">
+      <p>CSV Aggregator | Memberdayakan Analisis Data Anda</p>
+    </footer>
+  </body>
+</html>

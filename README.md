@@ -22,3 +22,9 @@ Proyek ini sangat ideal untuk kasus di mana Anda perlu menggabungkan data transa
 - **Hemat Memori**: Proses penggabungan dirancang untuk menangani file besar tanpa membebani RAM secara berlebihan.
 
 ---
+
+## Build
+
+```bash
+pyinstaller --name "CSVMergerApp" --onefile --windowed --add-data="Info.plist:." --osx-bundle-identifier "com.mikonku.csvmergerapp" desktop.py
+```
