@@ -1,6 +1,7 @@
 import sys
 import os
 import glob
+import shutil
 from datetime import datetime
 import pandas as pd
 from PyQt6.QtWidgets import (
@@ -21,7 +22,6 @@ def get_base_path():
     """
     if getattr(sys, 'frozen', False):
         if sys.platform == 'darwin':
-            # Path when bundled on macOS
             return os.path.abspath(os.path.join(os.path.dirname(sys.executable), '..', '..', '..'))
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.abspath(__file__))
@@ -35,34 +35,31 @@ class MergeWorker(QObject):
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
 
-    def __init__(self, source_a, source_b, merge_key, output_dir):
+    def __init__(self, source_a, source_b, merge_key, output_dir, merge_type):
         super().__init__()
         self.source_a = source_a
         self.source_b = source_b
         self.merge_key = merge_key
-        self.output_dir = output_dir # Directory chosen by the user
+        self.output_dir = output_dir
+        self.merge_type = merge_type
 
     def run(self):
+        path_temp = ""
         try:
             self.log.emit("--- Memulai Proses Penggabungan Data ---")
 
-            # --- DYNAMIC FOLDER LOGIC ---
-            # Use the user-provided directory as the base for outputs and temp files.
             base_output_path = self.output_dir
             path_temp = os.path.join(base_output_path, 'temp')
             path_output = os.path.join(base_output_path, 'outputs')
 
-            # Create these directories in the user-selected location
             os.makedirs(path_temp, exist_ok=True)
             self.log.emit(f"Folder sementara disiapkan di: {path_temp}")
             os.makedirs(path_output, exist_ok=True)
             self.log.emit(f"Folder output disiapkan di: {path_output}")
-            # --- END OF CHANGE ---
 
             temp_a_file = os.path.join(path_temp, 'consolidated_a.csv')
             temp_b_file = os.path.join(path_temp, 'consolidated_b.csv')
 
-            # --- TAHAP 1: KONSOLIDASI ---
             self.log.emit("\n--- Tahap 1: Konsolidasi Masing-Masing Sumber ---")
             self.progress.emit("Mengonsolidasi Source A...")
             success_a = self.consolidate_csvs(self.source_a, temp_a_file)
@@ -73,12 +70,10 @@ class MergeWorker(QObject):
 
             if not (success_a and success_b):
                 self.error.emit("Proses dihentikan karena salah satu tahap konsolidasi gagal.")
-                self.finished.emit()
                 return
 
-            # --- TAHAP 2: PENGGABUNGAN (MERGE) ---
             self.log.emit("\n--- Tahap 2: Penggabungan (Merge) Berdasarkan Kunci ---")
-            self.progress.emit(f"Menggabungkan data dengan kunci: '{self.merge_key}'...")
+            self.progress.emit(f"Menggabungkan data (tipe: {self.merge_type}) dengan kunci: '{self.merge_key}'...")
             
             df_a = pd.read_csv(temp_a_file)
             df_b = pd.read_csv(temp_b_file)
@@ -88,10 +83,9 @@ class MergeWorker(QObject):
                            f"Kolom di Source A: {list(df_a.columns)}\n"
                            f"Kolom di Source B: {list(df_b.columns)}")
                 self.error.emit(err_msg)
-                self.finished.emit()
                 return
-
-            final_df = pd.merge(df_a, df_b, on=self.merge_key, how='inner')
+            
+            final_df = pd.merge(df_a, df_b, on=self.merge_key, how=self.merge_type)
 
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
             final_output_file = os.path.join(path_output, f"{timestamp}_final_merge.csv")
@@ -105,6 +99,14 @@ class MergeWorker(QObject):
         except Exception as e:
             self.error.emit(f"Terjadi kesalahan: {e}")
         finally:
+            self.log.emit("\n--- Membersihkan file sementara ---")
+            if path_temp and os.path.isdir(path_temp):
+                try:
+                    shutil.rmtree(path_temp)
+                    self.log.emit("✅  Folder 'temp' berhasil dihapus.")
+                except Exception as e:
+                    self.log.emit(f"⚠️ Gagal menghapus folder 'temp': {e}")
+            
             self.finished.emit()
 
     def consolidate_csvs(self, input_path, output_file):
@@ -142,6 +144,24 @@ class MergeWorker(QObject):
             return False
 
 # ==============================================================================
+# Worker Thread for Loading Report CSV
+# ==============================================================================
+class ReportLoaderWorker(QObject):
+    finished = pyqtSignal(object)  # Will carry the DataFrame
+    error = pyqtSignal(str)
+
+    def __init__(self, file_path):
+        super().__init__()
+        self.file_path = file_path
+
+    def run(self):
+        try:
+            df = pd.read_csv(self.file_path)
+            self.finished.emit(df)
+        except Exception as e:
+            self.error.emit(f"Gagal memuat file laporan: {e}")
+
+# ==============================================================================
 # Main Application Window
 # ==============================================================================
 class App(QMainWindow):
@@ -150,7 +170,6 @@ class App(QMainWindow):
         self.setWindowTitle("Dynamic CSV Merger & Dashboard")
         self.setGeometry(100, 100, 1200, 800)
         
-        # Set App Icon
         base_path = get_base_path()
         if sys.platform == 'darwin':
             icon_path = os.path.join(base_path, 'assets', 'icon.icns')
@@ -181,8 +200,6 @@ class App(QMainWindow):
         title_label = QLabel("Pengaturan Proses Merge")
         title_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
         self.left_layout.addWidget(title_label)
-
-        # --- NEW: Output Directory Selection ---
         self.output_dir_label = QLabel("1. Pilih Folder Output/Kerja:")
         self.output_dir_path = QLineEdit()
         self.output_dir_path.setPlaceholderText("Hasil merge akan disimpan di sini")
@@ -194,8 +211,6 @@ class App(QMainWindow):
         self.left_layout.addWidget(self.output_dir_label)
         self.left_layout.addLayout(output_dir_layout)
         self.left_layout.addSpacing(15)
-        
-        # Source A
         self.source_a_label = QLabel("2. Pilih Folder Source A:")
         self.source_a_path = QLineEdit()
         self.source_a_path.setPlaceholderText("Path ke folder source A")
@@ -206,8 +221,6 @@ class App(QMainWindow):
         source_a_layout.addWidget(self.source_a_btn)
         self.left_layout.addWidget(self.source_a_label)
         self.left_layout.addLayout(source_a_layout)
-
-        # Source B
         self.source_b_label = QLabel("3. Pilih Folder Source B:")
         self.source_b_path = QLineEdit()
         self.source_b_path.setPlaceholderText("Path ke folder source B")
@@ -218,24 +231,23 @@ class App(QMainWindow):
         source_b_layout.addWidget(self.source_b_btn)
         self.left_layout.addWidget(self.source_b_label)
         self.left_layout.addLayout(source_b_layout)
-
-        # Merge Key
         self.merge_key_label = QLabel("4. Masukkan Foreign Key untuk Merge:")
         self.merge_key_input = QLineEdit()
         self.merge_key_input.setPlaceholderText("Contoh: id_transaksi")
         self.left_layout.addWidget(self.merge_key_label)
         self.left_layout.addWidget(self.merge_key_input)
-
-        # Run Button
+        self.merge_type_label = QLabel("5. Pilih Tipe Merge:")
+        self.merge_type_selector = QComboBox()
+        self.merge_type_selector.addItems(['inner', 'left', 'right', 'outer'])
+        self.left_layout.addWidget(self.merge_type_label)
+        self.left_layout.addWidget(self.merge_type_selector)
         self.run_button = QPushButton("Jalankan Proses Merge")
         self.run_button.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         self.run_button.setStyleSheet("background-color: #4CAF50; color: white; padding: 10px;")
         self.run_button.clicked.connect(self.run_merge_process)
         self.left_layout.addWidget(self.run_button)
-
         self.progress_label = QLabel("Status: Idle")
         self.left_layout.addWidget(self.progress_label)
-        
         self.log_label = QLabel("Log Proses:")
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
@@ -243,8 +255,8 @@ class App(QMainWindow):
         self.log_area.setStyleSheet("background-color: #222; color: #0f0;")
         self.left_layout.addWidget(self.log_label)
         self.left_layout.addWidget(self.log_area)
-
         self.left_layout.addStretch()
+
 
     def init_ui_dashboard(self):
         dash_title = QLabel("Dashboard Hasil Laporan")
@@ -279,6 +291,7 @@ class App(QMainWindow):
         source_a = self.source_a_path.text()
         source_b = self.source_b_path.text()
         merge_key = self.merge_key_input.text()
+        merge_type = self.merge_type_selector.currentText() 
 
         if not all([output_dir, source_a, source_b, merge_key]):
             self.show_error_message("Harap isi semua field (Folder Output, Source A, B, dan Foreign Key).")
@@ -289,7 +302,7 @@ class App(QMainWindow):
         self.log_area.clear()
 
         self.thread = QThread()
-        self.worker = MergeWorker(source_a, source_b, merge_key, output_dir)
+        self.worker = MergeWorker(source_a, source_b, merge_key, output_dir, merge_type)
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.run)
@@ -309,7 +322,9 @@ class App(QMainWindow):
         self.run_button.setText("Jalankan Proses Merge")
         self.progress_label.setText("Status: Idle")
         self.populate_report_selector()
-        QMessageBox.information(self, "Selesai", "Proses penggabungan data telah selesai!")
+        if not self.thread.isInterruptionRequested():
+             QMessageBox.information(self, "Selesai", "Proses penggabungan data telah selesai!")
+
 
     def on_merge_error(self, message):
         self.log_area.append(f"❌ ERROR: {message}")
@@ -343,7 +358,7 @@ class App(QMainWindow):
             else:
                 self.report_selector.addItem("Tidak ada laporan ditemukan")
         except Exception as e:
-            self.show_error_message(f"Gagal memuat laporan: {e}")
+            self.show_error_message(f"Gagal memuat daftar laporan: {e}")
 
     def display_report(self, index):
         if index < 0: return
@@ -351,17 +366,45 @@ class App(QMainWindow):
         if not output_dir_path: return
 
         file_name = self.report_selector.itemText(index)
-        output_dir = os.path.join(output_dir_path, 'outputs')
-        file_path = os.path.join(output_dir, file_name)
-
-        if not os.path.exists(file_path):
+        if not file_name or "tidak ditemukan" in file_name.lower() or "pilih folder" in file_name.lower():
             self.table_widget.clear()
             self.table_widget.setRowCount(0)
             self.table_widget.setColumnCount(0)
             return
+
+        output_dir = os.path.join(output_dir_path, 'outputs')
+        file_path = os.path.join(output_dir, file_name)
+
+        if not os.path.exists(file_path):
+            return
         
+        # --- UI Changes for Loading State ---
+        self.table_widget.clear()
+        self.table_widget.setRowCount(1)
+        self.table_widget.setColumnCount(1)
+        self.table_widget.setHorizontalHeaderLabels(["Status"])
+        self.table_widget.setItem(0, 0, QTableWidgetItem("Sedang memuat laporan..."))
+        self.report_selector.setEnabled(False)
+        self.refresh_button.setEnabled(False)
+
+        # --- Run Report Loader in a new thread ---
+        self.report_thread = QThread()
+        self.report_worker = ReportLoaderWorker(file_path)
+        self.report_worker.moveToThread(self.report_thread)
+
+        self.report_thread.started.connect(self.report_worker.run)
+        self.report_worker.finished.connect(self.populate_table_with_data)
+        self.report_worker.error.connect(self.on_report_load_error)
+
+        self.report_worker.finished.connect(self.report_thread.quit)
+        self.report_worker.finished.connect(self.report_worker.deleteLater)
+        self.report_thread.finished.connect(self.report_thread.deleteLater)
+
+        self.report_thread.start()
+
+    def populate_table_with_data(self, df):
         try:
-            df = pd.read_csv(file_path)
+            self.table_widget.clear()
             self.table_widget.setRowCount(df.shape[0])
             self.table_widget.setColumnCount(df.shape[1])
             self.table_widget.setHorizontalHeaderLabels(df.columns)
@@ -370,9 +413,22 @@ class App(QMainWindow):
                 for j, val in enumerate(row):
                     self.table_widget.setItem(i, j, QTableWidgetItem(str(val)))
             
-            self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+            self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         except Exception as e:
-            self.show_error_message(f"Gagal menampilkan file {file_name}: {e}")
+            self.show_error_message(f"Gagal menampilkan data di tabel: {e}")
+        finally:
+            self.report_selector.setEnabled(True)
+            self.refresh_button.setEnabled(True)
+
+    def on_report_load_error(self, message):
+        self.show_error_message(message)
+        self.table_widget.clear()
+        self.table_widget.setRowCount(1)
+        self.table_widget.setColumnCount(1)
+        self.table_widget.setHorizontalHeaderLabels(["Error"])
+        self.table_widget.setItem(0, 0, QTableWidgetItem("Gagal memuat data."))
+        self.report_selector.setEnabled(True)
+        self.refresh_button.setEnabled(True)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
