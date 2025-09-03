@@ -17,7 +17,7 @@
     <key>CFBundleExecutable</key>
     <string>CSVMergerApp</string>
     <key>CFBundleIconFile</key>
-    <string>icon.icns</string>
+    <string>icon.ico</string>
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSPrincipalClass</key>

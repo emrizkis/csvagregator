@@ -5,7 +5,7 @@ a = Analysis(
     ['desktop.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('Info.plist', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -40,5 +40,5 @@ app = BUNDLE(
     exe,
     name='CSVMergerApp.app',
     icon=None,
-    bundle_identifier=None,
+    bundle_identifier='com.mikonku.csvmergerapp',
 )
